@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+  <%- include('./partials/head.ejs') %>
+  <body>
+    <%- include('./partials/nav.ejs') %>
+
+    <main class="details">
+      <h2><%= blog.title %></h2>
+      <p><%= blog.body %></p>
+
+      <a class="delete" id="delete-btn" data-id="<%= blog.id %>">delete</a>
+    </main>
+    <%- include('./partials/footer.ejs') %>
+
+    <script>
+      const deleteBtn = document.getElementById("delete-btn");
+      deleteBtn.addEventListener("click", () => {
+        const blogId = deleteBtn.dataset.id;
+        fetch(`/blogs/${blogId}`, {
+          method: "DELETE",
+        })
+          .then((res) => {
+            console.log("the blog is deleted successfully!");
+            return res.json();
+          })
+          .then((data) => {
+            window.location.href = data.redirect;
+          })
+          .catch((err) => {
+            console.error("error while deleting blog", err);
+          });
+      });
+    </script>
+  </body>
+</html>
