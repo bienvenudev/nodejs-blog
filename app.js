@@ -1,3 +1,4 @@
+require('dotenv').config()
 const express = require("express");
 const mongoose = require("mongoose");
 const app = express();
@@ -8,8 +9,15 @@ app.set("view engine", "ejs");
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static("public"));
 
-const dbURI =
-  "mongodb+srv://bienvenu:bienvenu123@blogcluster.kgzxnms.mongodb.net/blogcluster?retryWrites=true&w=majority&appName=blogcluster";
+// security headers
+app.use((req, res, next) => {
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  res.setHeader("X-Frame-Options", "DENY");
+  next();
+});
+
+const dbURI = process.env.MONGODB_URI;
+const PORT = process.env.PORT || 4000;
 
 mongoose
   .connect(dbURI)
@@ -30,7 +38,10 @@ app.get("/about", (req, res) => {
 
 app.use("/blogs", blogRoutes);
 
-const PORT = 4000;
+app.use((req, res) => {
+  res.status(404).render("error", { title: "Page Not Found" });
+});
+
 app.listen(PORT, () => {
   console.log(`server listening on port ${PORT}`);
 });
