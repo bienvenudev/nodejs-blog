@@ -18,10 +18,25 @@ router.get("/create", (req, res) => {
 });
 
 router.post("/", (req, res) => {
-  const newBlog = new Blog(req.body);
-  newBlog.save();
+  const { title, snippet, body } = req.body;
 
-  res.redirect("/");
+  if (!title || !snippet || !body) {
+    return res
+      .status(404)
+      .render("error", { title: "All fields are required" });
+  }
+
+  const newBlog = new Blog(req.body);
+
+  newBlog
+    .save()
+    .then(() => {
+      res.redirect("/blogs");
+    })
+    .catch((err) => {
+      console.log("Error saving blog:", err);
+      res.status(500).render("error", { title: "Failed to save blog" });
+    });
 });
 
 router.delete("/:id", (req, res) => {
@@ -41,9 +56,17 @@ router.delete("/:id", (req, res) => {
 
 router.get("/:id", (req, res) => {
   const id = req.params.id;
-  Blog.findById(id).then((blog) => {
-    res.status(200).render("details", { title: "Blog", blog });
-  });
+  Blog.findById(id)
+    .then((blog) => {
+      if (!blog) {
+        return res.status(404).render("error", { title: "Blog Not Found" });
+      }
+      res.status(200).render("details", { title: "Blog Details", blog });
+    })
+    .catch((err) => {
+      console.log("Error finding blog:", err);
+      res.status(500).render("error", { title: "Error" });
+    });
 });
 
 module.exports = router;
